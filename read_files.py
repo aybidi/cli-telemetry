@@ -1,6 +1,8 @@
 import click
 import sys
 
+from bq_storage import upload_data
+
 @click.command()
 @click.option(
     "-fp",
@@ -24,4 +26,16 @@ def read(file_path):
     log_command(sys.argv)
 
 def log_command(command):
-    click.echo(command)
+    sanitized_command = sanitize_command(command)
+    upload_data(sanitized_command)
+
+def sanitize_command(command) -> str:
+    """
+    makes sure to clean the command of any secrets
+    before logging
+    """
+    if not command:
+        return
+    first_word = command[0].split("/")[-1]
+    final_command = " ".join([first_word] + command[1:])
+    return final_command
